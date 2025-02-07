@@ -1,0 +1,26 @@
+name: Deploy to EC2
+
+# This robot (workflow) runs when you push changes to the "main" branch.
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Deploy to EC2 via SSH
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}        # Your EC2 instance public domain or IP
+          username: ${{ secrets.EC2_USER }}      # The username for your EC2 (often "ubuntu")
+          key: ${{ secrets.EC2_SSH_KEY }}        # Your private SSH key (stored as a secret)
+          script: |
+            /home/ubuntu/vishnu_airflow/
+            git pull
+            # You can add more commands here if needed
