@@ -4,7 +4,7 @@ from airflow.providers.mysql.hooks.mysql import MySqlHook
 from airflow.decorators import task
 from airflow.utils.dates import days_ago
 from airflow.models import Variable
-from airflow.exceptions import AirflowFailException  # Fixed Import
+from airflow.exceptions import AirflowFailException
 import pandas as pd
 from sqlalchemy import text
 import json

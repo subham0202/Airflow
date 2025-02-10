@@ -74,6 +74,8 @@ with DAG(
         except Exception as e:
             logging.error(f"Error fetching offset for table {table_name}: {e}")
             raise AirflowException(f"Error fetching offset for table {table_name}: {e}")
+        finally:
+            engine.dispose()  # Ensure the connection is closed
 
     @task(retries=3, retry_delay=timedelta(minutes=1))
     def extract_data(api_endpoint: str, offset: int):
@@ -135,6 +137,8 @@ with DAG(
         except Exception as e:
             logging.error(f"Error loading data into {table_name}: {e}")
             raise
+        finally:
+            engine.dispose()  # Ensure the connection is closed
 
     for api_endpoint in apis:
         table_name = prefix + api_endpoint.replace("-", "_")

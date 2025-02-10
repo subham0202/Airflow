@@ -4,6 +4,7 @@ from airflow.providers.mysql.hooks.mysql import MySqlHook
 from airflow.decorators import task
 from airflow.utils.dates import days_ago
 from airflow.models import Variable
+from airflow.exceptions import AirflowFailException
 import requests
 import json
 from sqlalchemy import create_engine, text

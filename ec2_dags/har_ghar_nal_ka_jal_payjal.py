@@ -38,6 +38,8 @@ with DAG(dag_id='har_ghar_nal_ka_jal_pay_jal',
         except Exception as e:
             print(f"Error fetching count from table {name}: {e}")
             return -1
+        finally:
+            engine.dispose()  # Ensure the engine is disposed of properly
 
 
 
@@ -106,6 +108,8 @@ with DAG(dag_id='har_ghar_nal_ka_jal_pay_jal',
             except Exception as e:
                 print(f"Error loading data to {table_name}: {str(e)}")
                 raise
+            finally:
+                engine.dispose()  # Ensure the engine is disposed of properly
 
 
 

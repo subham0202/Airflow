@@ -39,8 +39,6 @@ with DAG(dag_id='Cooperative_BRFSY_KHARIF',
             print(f"Error fetching count from table {name}: {e}")
             return -1
 
-
-
     @task()
     def extract_data(offset):
         """Extract weather data from NIC API using Airflow Connection."""
@@ -64,7 +62,6 @@ with DAG(dag_id='Cooperative_BRFSY_KHARIF',
         else:
             raise Exception(f"Failed to fetch weather data: {response.status_code}")
 
-
     @task()
     def transform_data(data):
         ####This Function will contain the code for tranformation when injesting raw to AI####
@@ -74,44 +71,35 @@ with DAG(dag_id='Cooperative_BRFSY_KHARIF',
 
     @task()
     def load_data(df, table_name):
-            if df.empty:
-                raise AirflowFailException("DataFrame is empty. Failing the task.")
+        if df.empty:
+            raise AirflowFailException("DataFrame is empty. Failing the task.")
 
-            mysql_hook = MySqlHook(mysql_conn_id="mysql_conn_id")
-            engine = mysql_hook.get_sqlalchemy_engine()
+        mysql_hook = MySqlHook(mysql_conn_id="mysql_conn_id")
+        engine = mysql_hook.get_sqlalchemy_engine()
         
-            try:
-                # Use MySqlHook to get SQLAlchemy engine
-                
-
-                with engine.begin() as conn:
+        try:
+            # Use MySqlHook to get SQLAlchemy engine
+            with engine.begin() as conn:
                 # Insert data into the database
-                    df.to_sql(
-                        table_name,
-                        con=conn,
-                        if_exists='append',
-                        index=False,
-                        chunksize=10000,
-                    schema='bipard_staging'                )
-                    print(f"Inserted {len(df)} rows successfully into {table_name}")
+                df.to_sql(
+                    table_name,
+                    con=conn,
+                    if_exists='append',
+                    index=False,
+                    chunksize=10000,
+                    schema='bipard_staging'
+                )
+                print(f"Inserted {len(df)} rows successfully into {table_name}")
 
-                    # Update the mauja_code table
-                query = text(f"update bipard_staging.table_status set offset_of_table=offset_of_table+{int(len(df))} where table_name='{table_name}';")
-                # print(query)
-                with engine.begin() as con:
-                    con.execute(query)
+            query = text(f"update bipard_staging.table_status set offset_of_table=offset_of_table+{int(len(df))} where table_name='{table_name}';")
+            with engine.begin() as con:
+                con.execute(query)
                             
-            except Exception as e:
-                print(f"Error loading data to {table_name}: {str(e)}")
-                raise
+        except Exception as e:
+            print(f"Error loading data to {table_name}: {str(e)}")
+            raise
 
-
-
-
-
-
-
-    offset=get_offset('Cooperative_BRFSY_KHARIF') #change table name here 
-    t_data=extract_data(offset=offset)
-    trans_data=transform_data(t_data)
-    load_data(trans_data,'Cooperative_BRFSY_KHARIF')
+    offset = get_offset('Cooperative_BRFSY_KHARIF')  # change table name here 
+    t_data = extract_data(offset=offset)
+    trans_data = transform_data(t_data)
+    load_data(trans_data, 'Cooperative_BRFSY_KHARIF')

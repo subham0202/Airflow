@@ -40,6 +40,8 @@ with DAG(dag_id='HGS_scst_welfare',
         except Exception as e:
             print(f"Error fetching count from table {name}: {e}")
             return -1
+        finally:
+            engine.dispose()  # Ensure the engine is disposed of properly
 
 
 
@@ -76,27 +78,25 @@ with DAG(dag_id='HGS_scst_welfare',
 
     @task()
     def load_data(df, table_name):
-            if df.empty:
-                raise AirflowFailException("DataFrame is empty. Failing the task.")
+        if df.empty:
+            raise AirflowFailException("DataFrame is empty. Failing the task.")
 
-            mysql_hook = MySqlHook(mysql_conn_id="mysql_conn_id")
-            engine = mysql_hook.get_sqlalchemy_engine()
-        
-            try:
-                # Use MySqlHook to get SQLAlchemy engine
-                
-
-                with engine.begin() as conn:
-                
+        mysql_hook = MySqlHook(mysql_conn_id="mysql_conn_id")
+        engine = mysql_hook.get_sqlalchemy_engine()
+    
+        try:
+            # Use MySqlHook to get SQLAlchemy engine
+            with engine.begin() as conn:
                 # Insert data into the database
-                    df.to_sql(
-                        table_name,
-                        con=conn,
-                        if_exists='append',
-                        index=False,
-                        chunksize=10000,
-                schema='bipard_staging'                )
-                    print(f"Inserted {len(df)} rows successfully into {table_name}")
+                df.to_sql(
+                    table_name,
+                    con=conn,
+                    if_exists='append',
+                    index=False,
+                    chunksize=10000,
+                    schema='bipard_staging'
+                )
+                print(f"Inserted {len(df)} rows successfully into {table_name}")
 
                 # Update the mauja_code table
                 query = text(f"update bipard_staging.table_status set offset_of_table=offset_of_table+{int(len(df))} where table_name='{table_name}';")
@@ -104,10 +104,12 @@ with DAG(dag_id='HGS_scst_welfare',
              
                 with engine.begin() as con:
                     con.execute(query)
-                            
-            except Exception as e:
-                print(f"Error loading data to {table_name}: {str(e)}")
-                raise
+                        
+        except Exception as e:
+            print(f"Error loading data to {table_name}: {str(e)}")
+            raise
+        finally:
+            engine.dispose()  # Ensure the engine is disposed of properly
 
 
 

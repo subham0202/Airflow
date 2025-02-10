@@ -32,6 +32,8 @@ with DAG(dag_id='hand_pumps',
         except Exception as e:
             print(f"Error fetching offset for table {name}: {e}")
             return -1
+        finally:
+            engine.dispose()  # Ensure the engine is disposed
 
     @task()
     def extract_data(offset):
@@ -86,6 +88,8 @@ with DAG(dag_id='hand_pumps',
         except Exception as e:
             print(f"Error loading data into {table_name}: {str(e)}")
             raise
+        finally:
+            engine.dispose()  # Ensure the engine is disposed
 
     # DAG task dependencies
     offset = get_offset('hand_pumps')  # Change table name here

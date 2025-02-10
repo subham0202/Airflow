@@ -22,7 +22,7 @@ with DAG(dag_id='Cooperative_BRFSY_RABI',
          default_args=default_args,
          schedule_interval='@daily',
          max_active_runs=1,
-         catchup=False) as dags:
+         catchup=False) as dag:
     
     @task()
     def get_offset(name: str) -> int:
@@ -38,6 +38,8 @@ with DAG(dag_id='Cooperative_BRFSY_RABI',
         except Exception as e:
             print(f"Error fetching count from table {name}: {e}")
             return -1
+        finally:
+            engine.dispose()  # Ensure the connection is closed
 
 
 
@@ -106,6 +108,8 @@ with DAG(dag_id='Cooperative_BRFSY_RABI',
             except Exception as e:
                 print(f"Error loading data to {table_name}: {str(e)}")
                 raise
+            finally:
+                engine.dispose()  # Ensure the connection is closed
 
 
 

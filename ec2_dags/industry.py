@@ -34,6 +34,8 @@ with DAG(dag_id='industry_data',
         except Exception as e:
             print(f"Error fetching offset for table {name}: {e}")
             return 0  # Default to 0 on error
+        finally:
+            engine.dispose()  # Ensure the engine is disposed of properly
 
     @task()
     def extract_data(offset: int, dropdown_type: str):
@@ -101,6 +103,8 @@ with DAG(dag_id='industry_data',
         except Exception as e:
             print(f"Error loading data into {table_name}: {str(e)}")
             raise
+        finally:
+            engine.dispose()  # Ensure the engine is disposed of properly
 
     # Task dependencies for industries data
     offset_investment = get_offset('industry_investment')  # Replace with correct table name

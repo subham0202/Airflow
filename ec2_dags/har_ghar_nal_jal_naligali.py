@@ -38,8 +38,8 @@ with DAG(dag_id='har_ghar_nal_ka_jal_nali_gali',
         except Exception as e:
             print(f"Error fetching count from table {name}: {e}")
             return -1
-
-
+        finally:
+            engine.dispose()  # Ensure the engine is disposed
 
     @task()
     def extract_data(offset):
@@ -103,12 +103,8 @@ with DAG(dag_id='har_ghar_nal_ka_jal_nali_gali',
             except Exception as e:
                 print(f"Error loading data to {table_name}: {str(e)}")
                 raise
-
-
-
-
-
-
+            finally:
+                engine.dispose()  # Ensure the engine is disposed
 
     offset=get_offset('har_ghar_nal_ka_jal_nali_gali') #change table name here 
     t_data=extract_data(offset=offset)
